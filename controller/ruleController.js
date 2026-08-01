@@ -1,0 +1,96 @@
+const express = require('express');
+const Rule = require('../model/rule');
+
+exports.createRule = async(req, res) => {
+    try {
+
+        const {
+            endpoint, 
+            method,
+            limit,
+            window
+        } = req.body;
+
+        const rule = await Rule.create({
+            apikey:req.apikey._id,
+            endpoint,
+            method,
+            limit,
+            window
+
+        });
+        res.status(200).json({
+            status: "success",
+            Data: rule
+        })
+        
+    } catch (error) {
+        res.status(404).json({
+            status: "Failed",
+            message: error.message
+        })
+    }
+}
+
+exports.getallRules = async(req, res) => {
+
+    try{
+    const allRules = await Rule.find();
+    res.status(200).json({
+        status: "Success",
+        Rules: allRules
+    })
+    }catch(error){
+        res.status(400).json({
+            status: "Fail",
+            message: error
+        })
+    }
+}
+
+exports.updateRule = async(req, res) => {
+    try {
+        const updatetask = await Rule.findByIdAndUpdate(req.params.id, req.body,{
+            new: true,
+            runValidators: true
+        });
+
+        if(!updatetask){
+            return res.status(404).json({
+                message: "The element u are trying to access doesn't exist"
+            })
+        }
+
+        res.status(200).json({
+            status: "Success",
+            updatedRule: updatetask
+        })
+    } catch (error) {
+        res.status(400).json({
+            status: "Fail",
+            message: error.message
+        })
+    }
+}
+
+exports.DeleteRule = async(req, res) => {
+    try {
+        const deletetask = await Rule.findByIdAndDelete(req.params.id);
+
+        if(!deletetask){
+            return res.status(404).json({
+                message: "The element u are trying to delete doesn't exist"
+            })
+        }
+
+        res.status(200).json({
+            status: "Success"
+        })
+    } catch (error) {
+        res.status(400).json({
+            status: "Fail",
+            message: error.message
+        })
+    }
+}
+
