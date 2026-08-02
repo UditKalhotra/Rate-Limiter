@@ -1,19 +1,30 @@
 const mongoose = require('mongoose');
 
 const apiKeySchema = new mongoose.Schema({
-    name:{
-        type:String,
-        required:true
+    name: {
+        type: String,
+        required: true
     },
-    key:{
-        type:String,
-        required:true,
-        unique:true
+    key: {
+        type: String,
+        required: true
     },
-    createdAt:{
+    status: {
+        type: String,
+        enum: ["active", "revoked"],
+        default: "active"
+    },
+    lastUsed:{
+        type:Date
+    },
+    requestCount:{
+        type: Number,
+        default: 0
+    },
+    createdAt: {
         type: Date,
         default: Date.now
     }
 });
 
-module.exports = mongoose.model("APIkey", apiKeySchema);
+module.exports = mongoose.model('ApiKey', apiKeySchema);

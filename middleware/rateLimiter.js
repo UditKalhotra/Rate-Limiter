@@ -12,7 +12,6 @@ const RateLimiter = async(req, res, next) =>{
             endpoint:req.originalUrl,
             method:req.method
         });
-        console.log(rule);
 
         if(!rule){
             return next();

@@ -1,4 +1,5 @@
 const API = require('../model/apikey');
+const bcrypt = require("bcrypt");
 
 const apikeyAuth = async(req, res,next) => {
 
@@ -11,17 +12,42 @@ const apikeyAuth = async(req, res,next) => {
             });
         }
 
-        const apikey = await API.findOne({
-            key:key
-        });
+        const apikey = await API.find();
 
-        if (!apikey) {
+        let matchedkey = null;
+
+        for(const storedkey of apikey){
+            const isValid = await bcrypt.compare(
+                key, 
+                storedkey.key
+            )
+
+             if(isValid){
+
+                if(storedkey.status === "revoked"){
+                    return res.status(401).json({
+                        message:"API key revoked :"
+                    });
+                }
+
+                storedkey.lastUsed = Date.now();
+                storedkey.requestCount += 1;
+
+                await storedkey.save();
+
+
+               matchedkey = storedkey;
+               break;
+            }
+        };
+
+        if (!matchedkey) {
             return res.status(401).json({
                 message: "Invalid API key"
             });
         }
 
-        req.apikey = apikey;
+        req.apikey = matchedkey;
 
         next();
 

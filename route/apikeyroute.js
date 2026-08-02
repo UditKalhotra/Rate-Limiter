@@ -11,5 +11,8 @@ router.route('/register')
 router.route('/register/:id')
 .delete(apiController.deleteAPI);
 
+router.route('/:id/revoke')
+.patch(apiController.revokeAPI);
+
 
 module.exports = router;

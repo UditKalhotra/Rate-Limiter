@@ -35,7 +35,9 @@ exports.createRule = async(req, res) => {
 exports.getallRules = async(req, res) => {
 
     try{
-    const allRules = await Rule.find();
+    const allRules = await Rule.find({
+        apikey:req.apikey._id
+    });
     res.status(200).json({
         status: "Success",
         Rules: allRules
@@ -50,7 +52,11 @@ exports.getallRules = async(req, res) => {
 
 exports.updateRule = async(req, res) => {
     try {
-        const updatetask = await Rule.findByIdAndUpdate(req.params.id, req.body,{
+        const { id } = req.params;
+        const updatetask = await Rule.findOneAndUpdate({
+            _id:id,
+            apikey:req.apikey._id
+        }, req.body,{
             new: true,
             runValidators: true
         });
@@ -75,7 +81,11 @@ exports.updateRule = async(req, res) => {
 
 exports.DeleteRule = async(req, res) => {
     try {
-        const deletetask = await Rule.findByIdAndDelete(req.params.id);
+        const { id } = req.params;
+        const deletetask = await Rule.findOneAndDelete({
+    _id:id,
+    apikey:req.apikey._id
+});
 
         if(!deletetask){
             return res.status(404).json({
