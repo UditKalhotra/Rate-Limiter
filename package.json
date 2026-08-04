@@ -1,9 +1,30 @@
 {
+  "name": "project-rate",
+  "version": "1.0.0",
+  "description": "The project is about rate limiting controlling amount of traffice going through a server",
+  "homepage": "https://github.com/UditKalhotra/Rate-Limiter#readme",
+  "bugs": {
+    "url": "https://github.com/UditKalhotra/Rate-Limiter/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/UditKalhotra/Rate-Limiter.git"
+  },
+  "license": "ISC",
+  "author": "Udit Kalhotra",
+  "type": "commonjs",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "mongoose": "^9.9.0"
-  }
+    "mongoose": "^9.9.0",
+    "redis": "^6.2.0"
+  },
+  "devDependencies": {}
 }

@@ -1,36 +1,47 @@
 const Rule = require('../model/rule');
 const Request = require('../model/request');
+const redisClient = require("../config/redis");
 
 const RateLimiter = async(req, res, next) =>{
     try{
 
         const identifier = req.apikey._id;
-        console.log(identifier);
 
-        const rule = await Rule.findOne({
-            apikey:req.apikey._id,
-            endpoint:req.originalUrl,
-            method:req.method
-        });
+        const key = `rate_limit:${identifier}:${req.originalUrl}`;
 
-        if(!rule){
-            return next();
+        const rulekey = `rule:${req.apikey._id}:${req.originalUrl}:${req.method}`;
+
+        let rule = await redisClient.get(rulekey);
+
+        if(rule){
+            rule = JSON.parse(rule);
+        }else{
+                            console.log("feteching rule from mongodb");
+            rule = await Rule.findOne({
+                apikey:req.apikey._id,
+                endpoint:req.originalUrl,
+                method:req.method
+            });
+
+            if(rule){
+                await redisClient.set(rulekey, JSON.stringify(rule),{
+                    EX:3600
+                });
+            }else{
+                return res.status(403).json({
+                    message: "the rule is also not founded on the mongoose"
+                })
+            }
+
         }
 
-        const windowStart = new Date(
-            Date.now() - rule.window * 1000
-        );
+        const requestCount = await redisClient.incr(key);
 
-        const requestCount = await Request.countDocuments({
-            apikey:req.apikey._id,
-            endpoint:req.originalUrl,
-            method:req.method,
-            timestamp:{
-                $gte:windowStart
-            }
-        });
+        if(requestCount === 1){
+            await redisClient.expire(key, rule.window);
+        }
 
-        if(requestCount >= rule.limit){
+        if(requestCount > rule.limit){
             await Request.create({
                 apikey:req.apikey._id,
                 endpoint:req.originalUrl,

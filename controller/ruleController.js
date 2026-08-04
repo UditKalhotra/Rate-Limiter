@@ -1,5 +1,6 @@
 const express = require('express');
 const Rule = require('../model/rule');
+const redisClient = require("../config/redis");
 
 exports.createRule = async(req, res) => {
     try {
@@ -61,11 +62,15 @@ exports.updateRule = async(req, res) => {
             runValidators: true
         });
 
+
         if(!updatetask){
             return res.status(404).json({
                 message: "The element u are trying to access doesn't exist"
             })
         }
+
+        const key = `rule:${updatetask.apikey}:${updatetask.endpoint}:${updatetask.method}`;
+        await redisClient.del(key);
 
         res.status(200).json({
             status: "Success",
@@ -92,6 +97,9 @@ exports.DeleteRule = async(req, res) => {
                 message: "The element u are trying to delete doesn't exist"
             })
         }
+
+        const key = `rule:${deletetask.apikey}:${deletetask.endpoint}:${deletetask.method}`;
+        await redisClient.del(key);
 
         res.status(200).json({
             status: "Success"
