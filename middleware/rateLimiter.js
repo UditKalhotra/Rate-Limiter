@@ -1,6 +1,7 @@
 const Rule = require('../model/rule');
 const Request = require('../model/request');
 const redisClient = require("../config/redis");
+const checkSlidingWindow = require("../config/slidingWindow");
 
 const RateLimiter = async(req, res, next) =>{
     try{
@@ -35,13 +36,30 @@ const RateLimiter = async(req, res, next) =>{
 
         }
 
-        const requestCount = await redisClient.incr(key);
+        const result = await checkSlidingWindow(
+            key, 
+            rule.limit,
+            rule.window * 1000
+        );
 
-        if(requestCount === 1){
-            await redisClient.expire(key, rule.window);
-        }
+        res.setHeader(
+            "X-RateLimit-Limit",
+            rule.limit
+        );
 
-        if(requestCount > rule.limit){
+        res.setHeader(
+            "X-RateLimit-Remaining",
+            result.remaining
+        );
+
+        res.setHeader(
+            "X-RateLimit-Reset",
+            result.reset
+        );
+
+        
+
+        if(!result.allowed){
             await Request.create({
                 apikey:req.apikey._id,
                 endpoint:req.originalUrl,
