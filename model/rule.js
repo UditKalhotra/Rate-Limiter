@@ -18,12 +18,24 @@ const ruleSchema = new mongoose.Schema({
         uppercase:true
     },
     limit:{
-        type:Number,
-        required:true
+        type:Number
     },
     window:{
-        type:Number,
-        required:true
+        type:Number
+    },
+    algorithm:{
+        type:String,
+        enum:[
+            "sliding_window",
+            "token_bucket"
+        ],
+        default:"sliding_window"
+    },
+    capacity:{
+        type:Number
+    },
+    refillRate:{
+        type:Number
     }
 },{
     timestamps:true

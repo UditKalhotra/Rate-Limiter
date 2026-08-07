@@ -2,6 +2,7 @@ const Rule = require('../model/rule');
 const Request = require('../model/request');
 const redisClient = require("../config/redis");
 const checkSlidingWindow = require("../config/slidingWindow");
+const {tokenBucket} = require("../config/tokenBucket");
 
 const RateLimiter = async(req, res, next) =>{
     try{
@@ -17,7 +18,6 @@ const RateLimiter = async(req, res, next) =>{
         if(rule){
             rule = JSON.parse(rule);
         }else{
-                            console.log("feteching rule from mongodb");
             rule = await Rule.findOne({
                 apikey:req.apikey._id,
                 endpoint:req.originalUrl,
@@ -26,7 +26,7 @@ const RateLimiter = async(req, res, next) =>{
 
             if(rule){
                 await redisClient.set(rulekey, JSON.stringify(rule),{
-                    EX:3600
+                    EX:300
                 });
             }else{
                 return res.status(403).json({
@@ -36,26 +36,27 @@ const RateLimiter = async(req, res, next) =>{
 
         }
 
-        const result = await checkSlidingWindow(
-            key, 
+        let result;
+
+        if(rule.algorithm === "token_bucket"){
+            const bucketKey = `token_bucket:${identifier}:${req.originalUrl}`;
+
+            result = await tokenBucket(
+                key,
+                rule.capacity,
+                rule.refillRate
+            )
+
+        }else{
+
+            result = await checkSlidingWindow(
+            key,
             rule.limit,
             rule.window * 1000
         );
 
-        res.setHeader(
-            "X-RateLimit-Limit",
-            rule.limit
-        );
+        }
 
-        res.setHeader(
-            "X-RateLimit-Remaining",
-            result.remaining
-        );
-
-        res.setHeader(
-            "X-RateLimit-Reset",
-            result.reset
-        );
 
         
 

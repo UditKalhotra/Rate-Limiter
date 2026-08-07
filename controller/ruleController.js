@@ -9,7 +9,10 @@ exports.createRule = async(req, res) => {
             endpoint, 
             method,
             limit,
-            window
+            window,
+            algorithm,
+            capacity,
+            refillRate
         } = req.body;
 
         const rule = await Rule.create({
@@ -17,7 +20,11 @@ exports.createRule = async(req, res) => {
             endpoint,
             method,
             limit,
-            window
+            window,
+            algorithm,
+            capacity,
+            refillRate
+
 
         });
         res.status(200).json({
