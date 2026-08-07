@@ -30,3 +30,14 @@ catch(error){
     })
 }
 }
+
+exports.restrictTo = (...role)=>{
+    return (req, res, next)=>{
+        if(!role.includes(req.user.role)){
+            return res.status(403).json({
+                message: "You don't have permission to access this resource :"
+            })
+        }
+        next();
+    }
+}
