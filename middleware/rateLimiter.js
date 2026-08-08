@@ -42,7 +42,7 @@ const RateLimiter = async(req, res, next) =>{
             const bucketKey = `token_bucket:${identifier}:${req.originalUrl}`;
 
             result = await tokenBucket(
-                key,
+                bucketKey,
                 rule.capacity,
                 rule.refillRate
             )
