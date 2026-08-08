@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const user = require('./user');
 
 const apiKeySchema = new mongoose.Schema({
     name: {
@@ -8,6 +9,11 @@ const apiKeySchema = new mongoose.Schema({
     key: {
         type: String,
         required: true
+    },
+    owner:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref:"User",
+        required:true
     },
     status: {
         type: String,
@@ -21,10 +27,8 @@ const apiKeySchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-    createdAt: {
-        type: Date,
-        default: Date.now
-    }
+},{
+    timestamps:true
 });
 
 module.exports = mongoose.model('ApiKey', apiKeySchema);

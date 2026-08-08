@@ -5,7 +5,7 @@ const ruleSchema = new mongoose.Schema({
     
     apikey:{
         type: mongoose.Schema.Types.ObjectId,
-        ref:"apikey",
+        ref:"ApiKey",
         required: true
     },
     endpoint:{

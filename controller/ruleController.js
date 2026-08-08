@@ -15,6 +15,12 @@ exports.createRule = async(req, res) => {
             refillRate
         } = req.body;
 
+        if(req.apikey.owner.toString() !== req.user.id){
+                return res.status(403).json({
+                    message:"You don't own this API key"
+        });
+}
+
         const rule = await Rule.create({
             apikey:req.apikey._id,
             endpoint,
@@ -43,6 +49,13 @@ exports.createRule = async(req, res) => {
 exports.getallRules = async(req, res) => {
 
     try{
+
+    if(req.apikey.owner.toString() !== req.user.id){
+        return res.status(403).json({
+            message:"You don't own this API key"
+        });
+    }
+        
     const allRules = await Rule.find({
         apikey:req.apikey._id
     });
@@ -61,6 +74,13 @@ exports.getallRules = async(req, res) => {
 exports.updateRule = async(req, res) => {
     try {
         const { id } = req.params;
+
+        if(req.apikey.owner.toString() !== req.user.id){
+                return res.status(403).json({
+                    message:"You don't own this API key"
+                });
+        }
+
         const updatetask = await Rule.findOneAndUpdate({
             _id:id,
             apikey:req.apikey._id
@@ -94,6 +114,13 @@ exports.updateRule = async(req, res) => {
 exports.DeleteRule = async(req, res) => {
     try {
         const { id } = req.params;
+
+        if(req.apikey.owner.toString() !== req.user.id){
+                return res.status(403).json({
+                    message:"You don't own this API key"
+                });
+        }
+
         const deletetask = await Rule.findOneAndDelete({
     _id:id,
     apikey:req.apikey._id

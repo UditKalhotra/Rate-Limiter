@@ -1,11 +1,12 @@
 const express = require('express');
 const apiController = require('../controller/apiController');
 const apiAuth = require('../middleware/apikeyauth');
+const {protect} = require("../middleware/authmiddle");
 
 const router = express.Router();
 
 router.route('/register')
-.post(apiController.createAPIkey)
+.post(protect, apiController.createAPIkey)
 .get(apiController.getallAPI);
 
 router.route('/register/:id')

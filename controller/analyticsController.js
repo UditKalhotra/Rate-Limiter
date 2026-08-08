@@ -192,5 +192,187 @@ error:error.message
 
 }
 
+}
+
+exports.getDashboard = async(req,res)=>{
+
+try{
+
+
+const totalRequests =
+await Request.countDocuments();
+
+
+
+const allowedRequests =
+await Request.countDocuments({
+    status:"allowed"
+});
+
+
+const blockedRequests =
+await Request.countDocuments({
+    status:"blocked"
+});
+
+
+
+const topAPIs = await Request.aggregate([
+
+{
+    $group:{
+        _id:{
+            endpoint:"$endpoint",
+            method:"$method"
+        },
+        requests:{
+            $sum:1
+        }
+    }
+},
+
+{
+    $sort:{
+        requests:-1
+    }
+},
+
+{
+    $limit:5
+},
+
+{
+    $project:{
+        _id:0,
+        endpoint:"$_id.endpoint",
+        method:"$_id.method",
+        requests:1
+    }
+}
+
+]);
+
+
+
+const abusiveKeys = await Request.aggregate([
+
+{
+    $group:{
+        _id:"$apikey",
+
+        totalRequests:{
+            $sum:1
+        },
+
+        blockedRequests:{
+            $sum:{
+                $cond:[
+                    {
+                        $eq:[
+                            "$status",
+                            "blocked"
+                        ]
+                    },
+                    1,
+                    0
+                ]
+            }
+        }
+    }
+},
+
+{
+    $project:{
+        _id:0,
+
+        apiKey:"$_id",
+
+        blockedPercentage:{
+            $multiply:[
+                {
+                    $divide:[
+                        "$blockedRequests",
+                        "$totalRequests"
+                    ]
+                },
+                100
+            ]
+        }
+    }
+},
+
+{
+    $sort:{
+        blockedPercentage:-1
+    }
+},
+
+{
+    $limit:5
+}
+
+]);
+
+
+
+const traffic = await Request.aggregate([
+
+{
+    $group:{
+        _id:{
+            hour:{
+                $hour:"$timestamp"
+            }
+        },
+
+        requests:{
+            $sum:1
+        }
+    }
+},
+
+{
+    $sort:{
+        "_id.hour":1
+    }
+},
+
+{
+    $project:{
+        _id:0,
+        hour:"$_id.hour",
+        requests:1
+    }
+}
+
+]);
+
+
+
+res.json({
+
+overview:{
+    totalRequests,
+    allowedRequests,
+    blockedRequests
+},
+
+topAPIs,
+
+abusiveKeys,
+
+traffic
+
+});
+
+
+}
+catch(error){
+
+res.status(500).json({
+    error:error.message
+});
+
+}
 
 }

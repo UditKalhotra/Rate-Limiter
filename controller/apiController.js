@@ -18,13 +18,14 @@ exports.createAPIkey = async(req, res) => {
 
         const apiKey = await API.create({
             name,
-            key: hashedKey
+            key: hashedKey,
+            owner:req.user.id
         });
         console.log(apiKey);
         console.log("Saved ID:", apiKey._id);
 console.log("Collection:", API.collection.name);
 
-        res.status(200).json({
+        res.status(201).json({
             message: "API Key Created u",
             apiKey: generateKey
         })
@@ -40,7 +41,9 @@ console.log("Collection:", API.collection.name);
 exports.getallAPI = async(req, res) => {
     try {
 
-        const apiKeys = await API.find();
+        const apiKeys = await API.find({
+            owner: req.user.id
+        });
 
         res.status(200).json({
             apiKeys
@@ -57,7 +60,11 @@ exports.getallAPI = async(req, res) => {
 
 exports.deleteAPI = async(req, res) => {
     try {
-        const deleteKey = await API.findByIdAndDelete(req.params.id);
+        const deleteKey = await API.findByIdAndDelete(
+            {
+            id:req.params.id,
+            owner:req.user.id
+        });
 
         if(!deleteKey){
             return res.status(404).json({
@@ -82,7 +89,10 @@ exports.revokeAPI = async(req, res) => {
 
     const { id } = req.params;
 
-    const apikey = await API.findByIdAndUpdate(id,
+    const apikey = await API.findByIdAndUpdate(
+        {
+            id,owner:req.user.id
+        },
         {
             status:"revoked"
         },

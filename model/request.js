@@ -4,7 +4,7 @@ const apikey = require('./apikey');
 const requestLogSchema = new mongoose.Schema({
     apikey:{
         type:mongoose.Schema.Types.ObjectId,
-        ref:apikey
+        ref:"ApiKey"
     },
     userID:{
         type:String
