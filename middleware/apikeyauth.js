@@ -1,5 +1,6 @@
 const API = require('../model/apikey');
 const bcrypt = require("bcrypt");
+const AppError = require('../utils/AppError');
 
 const apikeyAuth = async(req, res,next) => {
 
@@ -7,9 +8,7 @@ const apikeyAuth = async(req, res,next) => {
         const key = req.headers["x-api-key"];
 
         if(!key){
-             return res.status(401).json({
-                message: "API key missing"
-            });
+             return next(new AppError("API key is missing: ",404));
         }
 
         const apikey = await API.find();
@@ -25,9 +24,7 @@ const apikeyAuth = async(req, res,next) => {
              if(isValid){
 
                 if(storedkey.status === "revoked"){
-                    return res.status(401).json({
-                        message:"API key revoked :"
-                    });
+                    return next(new AppError("API key revoked",401));
                 }
 
                 storedkey.lastUsed = Date.now();
@@ -42,9 +39,7 @@ const apikeyAuth = async(req, res,next) => {
         };
 
         if (!matchedkey) {
-            return res.status(401).json({
-                message: "Invalid API key"
-            });
+            return next(new AppError("Invalid API key ",401));
         }
 
         req.apikey = matchedkey;
@@ -52,9 +47,7 @@ const apikeyAuth = async(req, res,next) => {
         next();
 
     } catch (error) {
-        res.status(500).json({
-            message: error.message
-        });
+        next(error);
     }
 }
 

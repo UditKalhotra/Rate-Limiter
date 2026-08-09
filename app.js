@@ -4,6 +4,7 @@ const testRoutes = require("./route/testroute");
 const APIRoute = require('./route/apikeyroute');
 const analysisReq = require("./route/analytics");
 const signUp = require("./route/authRoute");
+const errorhandler = require("./middleware/errorHandler");
 const app = express();
 const connectDB = require('./db/db');
 
@@ -17,6 +18,6 @@ app.use("/api", testRoutes);
 app.use("/analysis",analysisReq);
 app.use('/auth',signUp)
 
-
+app.use(errorhandler);
 
 module.exports = app;

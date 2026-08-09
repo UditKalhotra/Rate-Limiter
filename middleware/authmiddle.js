@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const AppError = require("../utils/AppError");
 
 exports.protect = async(req, res, next) => {
 
@@ -7,9 +8,7 @@ exports.protect = async(req, res, next) => {
 
     if(!authHeader || !authHeader.startsWith("Bearer ")){
 
-        return res.status(401).json({
-            message:"No token provided"
-        });
+        return next(new AppError("No token Provided",401));
 
     }
 
@@ -25,18 +24,14 @@ exports.protect = async(req, res, next) => {
     next();
 }
 catch(error){
-    res.status(500).json({
-        message: error.message
-    })
+    next(error);
 }
 }
 
 exports.restrictTo = (...role)=>{
     return (req, res, next)=>{
         if(!role.includes(req.user.role)){
-            return res.status(403).json({
-                message: "You don't have permission to access this resource :"
-            })
+            return next(new AppError("You don't have permission to access this resource :",403));
         }
         next();
     }

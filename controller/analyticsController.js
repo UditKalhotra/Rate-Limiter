@@ -1,7 +1,8 @@
 const Request = require("../model/request");
+const AppError = require("../utils/AppError");
 
 
-exports.getStats = async(req,res)=>{
+exports.getStats = async(req,res,next)=>{
 
     try{
 
@@ -26,16 +27,12 @@ exports.getStats = async(req,res)=>{
 
 
     }catch(error){
-
-        res.status(500).json({
-            message:error.message
-        });
-
+        next(error);
     }
 
 };
 
-exports.getMostUsedAPI = async(req, res) => {
+exports.getMostUsedAPI = async(req, res,next) => {
     try {
         const result = await Request.aggregate([
             {
@@ -63,13 +60,11 @@ exports.getMostUsedAPI = async(req, res) => {
         res.json(result);
         
     } catch (error) {
-        res.status(500).json({
-            error: error.message
-        });
+        next(error);
     }
 }
 
-exports.getAbusivekeys = async(req, res) => {
+exports.getAbusivekeys = async(req, res,next) => {
     try {
         const result = await Request.aggregate([
             {
@@ -127,13 +122,11 @@ exports.getAbusivekeys = async(req, res) => {
 
         res.json(result);
     } catch (error) {
-        res.status(500).json({
-            error: error.message
-        });
+        next(error);
     }
 }
 
-exports.getRequestsOverTime = async(req,res)=>{
+exports.getRequestsOverTime = async(req,res,next)=>{
 
 try{
 
@@ -186,15 +179,13 @@ res.json(result);
 }
 catch(error){
 
-res.status(500).json({
-error:error.message
-});
+next(error);
 
 }
 
 }
 
-exports.getDashboard = async(req,res)=>{
+exports.getDashboard = async(req,res,next)=>{
 
 try{
 
@@ -369,10 +360,7 @@ traffic
 }
 catch(error){
 
-res.status(500).json({
-    error:error.message
-});
-
+next(error);
 }
 
 }

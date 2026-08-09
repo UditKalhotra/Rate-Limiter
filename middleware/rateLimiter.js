@@ -3,6 +3,7 @@ const Request = require('../model/request');
 const redisClient = require("../config/redis");
 const checkSlidingWindow = require("../config/slidingWindow");
 const {tokenBucket} = require("../config/tokenBucket");
+const AppError = require('../utils/AppError');
 
 const RateLimiter = async(req, res, next) =>{
     try{
@@ -29,9 +30,7 @@ const RateLimiter = async(req, res, next) =>{
                     EX:300
                 });
             }else{
-                return res.status(403).json({
-                    message: "the rule is also not founded on the mongoose"
-                })
+                return next(new AppError("The rule is not founded in mongoDB",403));
             }
 
         }
@@ -68,9 +67,8 @@ const RateLimiter = async(req, res, next) =>{
                 status:"blocked"
             });
 
-           return res.status(429).json({
-                message: "Too many Request"
-            });
+           return next(new AppError("Too many Request",429));
+           
         }
 
         await Request.create({
@@ -85,10 +83,7 @@ const RateLimiter = async(req, res, next) =>{
 
 
     }catch(error){
-
-        res.status(500).json({
-            message: error.message
-        });
+        next(error);
     }
         
 };

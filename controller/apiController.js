@@ -1,15 +1,14 @@
 const crypto = require("crypto");
 const API = require('../model/apikey');
 const bcrypt = require("bcrypt");
+const AppError = require("../utils/AppError");
 
-exports.createAPIkey = async(req, res) => {
+exports.createAPIkey = async(req, res,next) => {
     try {
         const { name } = req.body;
 
         if(!name){
-            return res.status(400).json({
-                message: "The name is Required : "
-            })
+            return next(new AppError("The name is Required : ",400));
         }
 
         const generateKey = crypto.randomBytes(24).toString("hex");
@@ -31,14 +30,11 @@ console.log("Collection:", API.collection.name);
         })
 
     } catch (error) {
-        res.status(500).json({
-            message: error.message
-        });
-        
+        next(error);        
     }
 }
 
-exports.getallAPI = async(req, res) => {
+exports.getallAPI = async(req, res,next) => {
     try {
 
         const apiKeys = await API.find({
@@ -51,25 +47,21 @@ exports.getallAPI = async(req, res) => {
 
     } catch (error) {
 
-        res.status(500).json({
-            message: error.message
-        });
+       next(error);
 
     }
 }
 
-exports.deleteAPI = async(req, res) => {
+exports.deleteAPI = async(req, res,next) => {
     try {
-        const deleteKey = await API.findByIdAndDelete(
+        const deleteKey = await API.findOneAndDelete(
             {
-            id:req.params.id,
+            _id:req.params.id,
             owner:req.user.id
         });
 
         if(!deleteKey){
-            return res.status(404).json({
-                message: "THe thing u are trying to delte doesn't exist"
-            })
+            return next(new AppError("THe thing u are trying to delte doesn't exist",404));
         }
 
          res.status(200).json({
@@ -77,9 +69,7 @@ exports.deleteAPI = async(req, res) => {
         });
 
     } catch (error) {
-        res.status(500).json({
-            message: error.message
-        });
+        next(error);
     }
 }
 
@@ -89,9 +79,10 @@ exports.revokeAPI = async(req, res) => {
 
     const { id } = req.params;
 
-    const apikey = await API.findByIdAndUpdate(
+    const apikey = await API.findOneAndUpdate(
         {
-            id,owner:req.user.id
+            _id:id,
+            owner:req.user.id
         },
         {
             status:"revoked"
@@ -102,9 +93,7 @@ exports.revokeAPI = async(req, res) => {
     );
 
     if(!apikey){
-        return res.status(404).json({
-            message: "API key not found: "
-        });
+        return next(new AppError("API key not found",404));
     };
 
     res.status(200).json({
@@ -112,9 +101,7 @@ exports.revokeAPI = async(req, res) => {
         apikey
     })
 }catch(error){
-    res.status(500).json({
-            message:error.message
-        });
+    next(error);
 }
 
 }

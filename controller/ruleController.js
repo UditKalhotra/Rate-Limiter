@@ -1,8 +1,9 @@
 const express = require('express');
 const Rule = require('../model/rule');
 const redisClient = require("../config/redis");
+const AppError = require('../utils/AppError');
 
-exports.createRule = async(req, res) => {
+exports.createRule = async(req, res,next) => {
     try {
 
         const {
@@ -16,10 +17,8 @@ exports.createRule = async(req, res) => {
         } = req.body;
 
         if(req.apikey.owner.toString() !== req.user.id){
-                return res.status(403).json({
-                    message:"You don't own this API key"
-        });
-}
+                return next(new AppError("You don't own this API key :",401));  
+        }
 
         const rule = await Rule.create({
             apikey:req.apikey._id,
@@ -39,21 +38,17 @@ exports.createRule = async(req, res) => {
         })
         
     } catch (error) {
-        res.status(404).json({
-            status: "Failed",
-            message: error.message
-        })
+        next(error);
     }
 }
 
-exports.getallRules = async(req, res) => {
+exports.getallRules = async(req, res,next) => {
 
     try{
 
     if(req.apikey.owner.toString() !== req.user.id){
-        return res.status(403).json({
-            message:"You don't own this API key"
-        });
+         return next(new AppError("You don't own this API key :",401));  
+
     }
         
     const allRules = await Rule.find({
@@ -64,21 +59,17 @@ exports.getallRules = async(req, res) => {
         Rules: allRules
     })
     }catch(error){
-        res.status(400).json({
-            status: "Fail",
-            message: error
-        })
+        next(error);
     }
 }
 
-exports.updateRule = async(req, res) => {
+exports.updateRule = async(req, res,next) => {
     try {
         const { id } = req.params;
 
         if(req.apikey.owner.toString() !== req.user.id){
-                return res.status(403).json({
-                    message:"You don't own this API key"
-                });
+             return next(new AppError("You don't own this API key :",401));  
+
         }
 
         const updatetask = await Rule.findOneAndUpdate({
@@ -104,21 +95,17 @@ exports.updateRule = async(req, res) => {
             updatedRule: updatetask
         })
     } catch (error) {
-        res.status(400).json({
-            status: "Fail",
-            message: error.message
-        })
+        next(error);
     }
 }
 
-exports.DeleteRule = async(req, res) => {
+exports.DeleteRule = async(req, res,next) => {
     try {
         const { id } = req.params;
 
         if(req.apikey.owner.toString() !== req.user.id){
-                return res.status(403).json({
-                    message:"You don't own this API key"
-                });
+             return next(new AppError("You don't own this API key :",401));  
+
         }
 
         const deletetask = await Rule.findOneAndDelete({
@@ -127,9 +114,7 @@ exports.DeleteRule = async(req, res) => {
 });
 
         if(!deletetask){
-            return res.status(404).json({
-                message: "The element u are trying to delete doesn't exist"
-            })
+            return next(new AppError("the thing u are trying to delte doesn't exit",404));
         }
 
         const key = `rule:${deletetask.apikey}:${deletetask.endpoint}:${deletetask.method}`;
@@ -139,10 +124,7 @@ exports.DeleteRule = async(req, res) => {
             status: "Success"
         })
     } catch (error) {
-        res.status(400).json({
-            status: "Fail",
-            message: error.message
-        })
+       next(error);
     }
 }
 
