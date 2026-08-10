@@ -17,6 +17,7 @@ app.use('/', ruleRoutes);
 app.use("/api", testRoutes);
 app.use("/analysis",analysisReq);
 app.use('/auth',signUp)
+app.use('/api/v1', require('./route/checkRoute'));
 
 app.use(errorhandler);
 

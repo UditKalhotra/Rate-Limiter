@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.route('/register')
 .post(protect, apiController.createAPIkey)
-.get(apiController.getallAPI);
+.get(protect,apiController.getallAPI);
 
 router.route('/register/:id')
 .delete(apiController.deleteAPI);
