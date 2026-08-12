@@ -1,7 +1,7 @@
 const checkLimit = require('../service/checkLimit');
 const AppError = require('../utils/AppError');
 
-exports.check = async (req, res) => {
+exports.check = async (req, res,next) => {
     try {
         const { resource, method, clientId } = req.body;
 
