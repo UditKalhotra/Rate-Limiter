@@ -7,6 +7,7 @@ const apikeyAuth = async(req, res,next) => {
     try {
         const key = req.headers["x-api-key"];
 
+        console.log(key);
         if(!key){
              return next(new AppError("API key is missing: ",404));
         }

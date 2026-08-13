@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require("cors");
 const ruleRoutes = require('./route/ruleRoute');
 const testRoutes = require("./route/testroute");
 const APIRoute = require('./route/apikeyroute');
@@ -10,6 +11,7 @@ const connectDB = require('./db/db');
 
 connectDB();
 
+app.use(cors());
 app.use(express.json());
 
 app.use('/api-key', APIRoute);

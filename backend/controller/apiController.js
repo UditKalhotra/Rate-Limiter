@@ -73,7 +73,7 @@ exports.deleteAPI = async(req, res,next) => {
     }
 }
 
-exports.revokeAPI = async(req, res) => {
+exports.revokeAPI = async(req, res,next) => {
 
     try{
 

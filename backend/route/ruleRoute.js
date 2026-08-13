@@ -6,11 +6,11 @@ const rule = require('../model/rule');
 const {protect} = require("../middleware/authmiddle");
 
 router.route('/rule')
-.get(ruleController.getallRules)
+.get(apiAuth,protect,ruleController.getallRules)
 .post(protect, apiAuth,ruleController.createRule);
 
 router.route('/rule/:id')
-.patch(ruleController.updateRule)
+.patch(protect,apiAuth,ruleController.updateRule)
 .delete(protect,apiAuth,ruleController.DeleteRule);
 
 module.exports = router;
