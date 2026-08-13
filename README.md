@@ -104,4 +104,3 @@ Modern frontend dashboard with:
 
 ---
 
-# 📁 Project Structure
