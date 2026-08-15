@@ -1,17 +1,28 @@
-import { createContext, useContext, useState, useCallback } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, useRef } from "react";
 import * as api from "../api/endpoints";
 
 const AuthContext = createContext(null);
 
 const DIRECTORY_KEY = "rategate_user_directory"; // { [email]: name }
 
-function decodeRole(token) {
+function decodePayload(token) {
   try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    return payload.role || "USER";
+    return JSON.parse(atob(token.split(".")[1]));
   } catch {
-    return "USER";
+    return null;
   }
+}
+
+function decodeRole(token) {
+  return decodePayload(token)?.role || "USER";
+}
+
+// JWT `exp` is seconds-since-epoch. Returns ms remaining, or 0 if the
+// token is missing/malformed/already expired.
+function msUntilExpiry(token) {
+  const payload = decodePayload(token);
+  if (!payload?.exp) return 0;
+  return Math.max(0, payload.exp * 1000 - Date.now());
 }
 
 function readDirectory() {
@@ -40,14 +51,57 @@ function fallbackName(email) {
 }
 
 export function AuthProvider({ children }) {
-  const [token, setToken] = useState(() =>
-    localStorage.getItem("rategate_token")
-  );
+  const [token, setToken] = useState(() => {
+    const stored = localStorage.getItem("rategate_token");
+    // Wipe an already-expired token on load instead of treating the user
+    // as logged in and letting the first API call fail.
+    if (stored && msUntilExpiry(stored) <= 0) {
+      localStorage.removeItem("rategate_token");
+      localStorage.removeItem("rategate_name");
+      return null;
+    }
+    return stored;
+  });
   const [name, setName] = useState(() =>
     localStorage.getItem("rategate_name")
   );
 
   const role = token ? decodeRole(token) : null;
+  const logoutTimer = useRef(null);
+
+  const doLogout = useCallback(() => {
+    if (logoutTimer.current) {
+      clearTimeout(logoutTimer.current);
+      logoutTimer.current = null;
+    }
+    localStorage.removeItem("rategate_token");
+    localStorage.removeItem("rategate_name");
+    setToken(null);
+    setName(null);
+  }, []);
+
+  // Log the user out the instant the JWT hits its 2-hour expiry, even if
+  // they're just sitting idle on a page and never trigger a failed API
+  // call. Re-armed any time the token changes (login, refresh, etc).
+  useEffect(() => {
+    if (logoutTimer.current) clearTimeout(logoutTimer.current);
+    if (!token) return;
+
+    const remaining = msUntilExpiry(token);
+    if (remaining <= 0) {
+      doLogout();
+      return;
+    }
+
+    logoutTimer.current = setTimeout(() => {
+      doLogout();
+      if (window.location.pathname !== "/login") {
+        window.location.href = "/login?expired=1";
+      }
+    }, remaining);
+
+    return () => clearTimeout(logoutTimer.current);
+  }, [token, doLogout]);
 
   const doLogin = useCallback(async (email, password) => {
     const { data } = await api.login({ email, password });
@@ -68,13 +122,6 @@ export function AuthProvider({ children }) {
     const returnedName = data.user?.name || payload.name;
     if (returnedName) rememberName(payload.email, returnedName);
     return data;
-  }, []);
-
-  const doLogout = useCallback(() => {
-    localStorage.removeItem("rategate_token");
-    localStorage.removeItem("rategate_name");
-    setToken(null);
-    setName(null);
   }, []);
 
   const value = {

@@ -39,7 +39,7 @@ const icons = {
 };
 
 const navItems = [
-  { to: "/", label: "Dashboard", icon: icons.dashboard, end: true },
+  { to: "/dashboard", label: "Dashboard", icon: icons.dashboard, end: true },
   { to: "/api-keys", label: "API Keys", icon: icons.key },
   { to: "/rules", label: "Rules", icon: icons.rules },
   { to: "/test-console", label: "Test Console", icon: icons.console }

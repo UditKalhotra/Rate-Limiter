@@ -17,10 +17,23 @@ client.interceptors.request.use((config) => {
 client.interceptors.response.use(
   (res) => res,
   (err) => {
+    const code = err.response?.data?.code;
     const message =
       err.response?.data?.message ||
       err.message ||
       "Something went wrong. Please try again.";
+
+    // Session expired or the token is otherwise invalid — clear it and
+    // send the user back to login instead of leaving them stuck on a
+    // screen that will just keep failing.
+    if (code === "TOKEN_EXPIRED" || code === "TOKEN_INVALID") {
+      localStorage.removeItem("rategate_token");
+      localStorage.removeItem("rategate_name");
+      if (window.location.pathname !== "/login") {
+        window.location.href = "/login?expired=1";
+      }
+    }
+
     return Promise.reject(new Error(message));
   }
 );

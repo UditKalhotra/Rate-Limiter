@@ -24,6 +24,10 @@ export default function ApiKeys() {
 
   const [busyId, setBusyId] = useState(null);
 
+  // Existing keys revealed via the "Show key" button, keyed by _id.
+  const [shownKeys, setShownKeys] = useState({});
+  const [revealError, setRevealError] = useState("");
+
   const load = () => {
     setLoading(true);
     api
@@ -87,6 +91,53 @@ export default function ApiKeys() {
     }
   };
 
+  const toggleShowKey = async (id) => {
+    setRevealError("");
+
+    // Already fetched — just toggle visibility off, no need to re-fetch.
+    if (shownKeys[id]?.value) {
+      setShownKeys((prev) => ({
+        ...prev,
+        [id]: { ...prev[id], visible: !prev[id].visible }
+      }));
+      return;
+    }
+
+    setShownKeys((prev) => ({ ...prev, [id]: { loading: true, visible: true } }));
+    try {
+      const { data } = await api.revealApiKey(id);
+      setShownKeys((prev) => ({
+        ...prev,
+        [id]: { value: data.apiKey, visible: true, loading: false }
+      }));
+    } catch (err) {
+      setRevealError(err.message);
+      setShownKeys((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
+    }
+  };
+
+  const copyShownKey = async (id) => {
+    const value = shownKeys[id]?.value;
+    if (!value) return;
+    try {
+      await navigator.clipboard.writeText(value);
+      setShownKeys((prev) => ({ ...prev, [id]: { ...prev[id], justCopied: true } }));
+      setTimeout(
+        () =>
+          setShownKeys((prev) =>
+            prev[id] ? { ...prev, [id]: { ...prev[id], justCopied: false } } : prev
+          ),
+        1500
+      );
+    } catch {
+      /* clipboard not available, ignore */
+    }
+  };
+
   return (
     <div>
       <div className="page-header page-header-row">
@@ -100,6 +151,7 @@ export default function ApiKeys() {
       </div>
 
       {error && <div className="banner banner-error section-gap">{error}</div>}
+      {revealError && <div className="banner banner-error section-gap">{revealError}</div>}
 
       <div className="card">
         {!loading && keys.length === 0 ? (
@@ -117,6 +169,7 @@ export default function ApiKeys() {
             <thead>
               <tr>
                 <th>Name</th>
+                <th>Key</th>
                 <th>Status</th>
                 <th>Requests</th>
                 <th>Last used</th>
@@ -125,9 +178,39 @@ export default function ApiKeys() {
               </tr>
             </thead>
             <tbody>
-              {keys.map((k) => (
+              {keys.map((k) => {
+                const shown = shownKeys[k._id];
+                return (
                 <tr key={k._id}>
                   <td style={{ fontWeight: 600 }}>{k.name}</td>
+                  <td>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <code className="mono text-muted">
+                        {shown?.loading
+                          ? "Loading…"
+                          : shown?.visible && shown?.value
+                          ? shown.value
+                          : "••••••••••••••••"}
+                      </code>
+                      <button
+                        type="button"
+                        className="btn btn-secondary btn-sm"
+                        disabled={shown?.loading}
+                        onClick={() => toggleShowKey(k._id)}
+                      >
+                        {shown?.visible && shown?.value ? "Hide" : "Show"}
+                      </button>
+                      {shown?.visible && shown?.value && (
+                        <button
+                          type="button"
+                          className="btn btn-secondary btn-sm"
+                          onClick={() => copyShownKey(k._id)}
+                        >
+                          {shown?.justCopied ? "Copied" : "Copy"}
+                        </button>
+                      )}
+                    </div>
+                  </td>
                   <td>
                     <span
                       className={`badge ${
@@ -161,7 +244,8 @@ export default function ApiKeys() {
                     </div>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         )}
@@ -194,7 +278,7 @@ export default function ApiKeys() {
       {revealedKey && (
         <Modal title="Save your API key" onClose={() => setRevealedKey(null)}>
           <div className="banner banner-neutral">
-            This key is shown only once. Store it somewhere safe — you won't be able to view it again.
+            Copy this now. You can view it again anytime from the "Show" button next to the key.
           </div>
           <div className="key-reveal">
             <code>{revealedKey}</code>

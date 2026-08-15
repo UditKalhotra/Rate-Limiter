@@ -18,6 +18,9 @@ export const createApiKey = (name) =>
 // DELETE /api-key/register/:id -> { message }
 export const deleteApiKey = (id) => client.delete(`/api-key/register/${id}`);
 
+// GET /api-key/register/:id/reveal -> { apiKey } (decrypted, on demand)
+export const revealApiKey = (id) => client.get(`/api-key/register/${id}/reveal`);
+
 // PATCH /api-key/:id/revoke -> { message, apikey }
 export const revokeApiKey = (id) => client.patch(`/api-key/${id}/revoke`);
 

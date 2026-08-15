@@ -9,7 +9,7 @@ export default function NotFound() {
           This page doesn't exist.
         </p>
         <Link to="/" className="btn btn-primary">
-          Back to dashboard
+          Back home
         </Link>
       </div>
     </div>
