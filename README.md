@@ -1,106 +1,170 @@
-# 🚦 RateGate — Distributed API Rate Limiting Platform
+# 🚦 RateGate — API Rate Limiting Service
 
-A full-stack API rate limiting system that allows developers to create API keys, define custom rate limit rules, monitor traffic, and protect endpoints from abuse.
+A developer-focused API rate limiting service that helps applications protect their endpoints from abuse, traffic spikes, and excessive requests.
 
-Built with **Node.js, Express, MongoDB, Redis, and React**.
+RateGate provides API key authentication, configurable endpoint rules, Redis-backed request tracking, and real-time traffic analytics.
+
+---
+
+## 📸 Screenshots
+
+### Dashboard
+
+![Dashboard](./screenshot/dashboard.png)
+
+### API Key Management
+
+![API Keys](./screenshot/request.png)
+
+### Rule Configuration
+
+![Rules](./screenshot/rules.png)
 
 ---
 
 ## ✨ Features
 
-### 🔐 Authentication & Security
-- JWT-based authentication
-- Secure password hashing using bcrypt
-- Protected routes
-- Role-based access control
-
-### 🔑 API Key Management
-- Generate API keys for applications
-- Manage multiple API keys
-- Revoke compromised keys
-- Secure API key validation
-
-### ⚡ Rate Limiting Engine
-
-Supports multiple algorithms:
-
-- Sliding Window Rate Limiting
-- Token Bucket Rate Limiting
-
-Features:
-
-- Endpoint-level rules
-- HTTP method-specific limits
-- Real-time request validation
-- Abuse prevention
-
-### 📊 Analytics Dashboard
-
-Monitor:
-
-- Total requests
-- Allowed requests
-- Blocked requests
-- API usage patterns
-- Traffic statistics
-
-### 🖥️ React Dashboard
-
-Modern frontend dashboard with:
-
-- User authentication
-- API key management
-- Rule configuration
-- Testing console
-- Traffic visualization
+- 🔑 API key based application authentication
+- ⚙️ Custom rate limits per endpoint and HTTP method
+- ⚡ Redis-powered request tracking
+- 🛡️ Automatic request blocking with HTTP 429 responses
+- 📊 Real-time request analytics dashboard
+- 🔄 Middleware integration for external applications
 
 ---
 
-# 🏗️ Architecture
+## 🏗️ How It Works
 
+```
+Client Request
 
-                 React Frontend
-                       |
-                       |
-                    Axios
-                       |
-                       |
-                 Express API
-                       |
-        --------------------------------
-        |              |               |
-     MongoDB        Redis        JWT Auth
-        |
-        |
-   Application Data
+      ↓
 
+Customer Backend
 
----
+      ↓
 
-# 🛠️ Tech Stack
+RateGate API
 
-## Backend
+      ↓
 
-| Technology | Purpose |
-|------------|---------|
-| Node.js | Runtime |
-| Express.js | API framework |
-| MongoDB | Database |
-| Mongoose | ODM |
-| Redis | Fast request tracking |
-| JWT | Authentication |
-| bcrypt | Password hashing |
+Redis Rate Check
 
-## Frontend
+      ↓
 
-| Technology | Purpose |
-|------------|---------|
-| React 18 | UI framework |
-| Vite | Build tool |
-| Axios | API communication |
-| React Router | Navigation |
-| Recharts | Data visualization |
-| CSS | Styling |
+Allow / Block Response
+```
+
+A connected application sends request details to RateGate:
+
+```json
+{
+  "resource": "/login",
+  "method": "POST",
+  "clientId": "user-ip"
+}
+```
+
+RateGate checks the configured rules and returns whether the request should continue.
 
 ---
 
+## 🛠️ Tech Stack
+
+**Backend**
+
+- Node.js
+- Express.js
+
+**Database**
+
+- MongoDB
+
+**Caching / Rate Limiting**
+
+- Redis
+
+**Frontend**
+
+- React
+- Vite
+
+---
+
+## 🚀 Running Locally
+
+### Clone repository
+
+```bash
+git clone https://github.com/yourusername/RateGate.git
+cd RateGate
+```
+
+### Backend setup
+
+```bash
+cd backend
+npm install
+```
+
+Create `.env`:
+
+```env
+PORT=4000
+MONGO_URI=your_mongodb_uri
+REDIS_URL=redis://localhost:6379
+JWT_SECRET=your_secret
+API_KEY_SECRET=your_secret
+```
+
+Run:
+
+```bash
+npm run dev
+```
+
+---
+
+### Frontend setup
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+---
+
+## 🧪 Example Test
+
+Configured rule:
+
+```
+POST /login
+
+Limit:
+100 requests/minute
+```
+
+Load test:
+
+```
+Requests sent: 300
+
+Allowed: 100
+Blocked: 200
+```
+
+---
+
+## 📌 Future Improvements
+
+- Cloud deployment
+- SDK packages for different languages
+- Advanced monitoring
+
+---
+
+## 👨‍💻 Author
+
+Udit Kalhotra
