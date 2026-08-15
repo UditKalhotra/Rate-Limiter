@@ -1,8 +1,9 @@
 const redisclient = require("./redis");
 const fs = require("fs");
+const path = require("path");
 
 const script = fs.readFileSync(
-    "./config/tokenBucket.lua",
+    path.join(__dirname, "tokenBucket.lua"),
     "utf8"
 )
 

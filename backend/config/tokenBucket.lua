@@ -37,8 +37,13 @@ redis.call("HMSET", KEYS[1], "tokens", tokens, "lastRefill", lastRefill)
 -- Set a 1-hour TTL (3600 seconds) so inactive keys auto-delete
 redis.call("EXPIRE", KEYS[1], 3600)
 
+local reset = 0
+if tokens < 1 and refillRate > 0 then
+    reset = math.ceil((1 - tokens) / refillRate)
+end
+
 return {
     allowed,
     math.floor(tokens),
-    lastRefill
+    reset
 }

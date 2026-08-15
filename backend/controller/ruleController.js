@@ -38,7 +38,13 @@ exports.createRule = async(req, res,next) => {
         })
         
     } catch (error) {
-        next(error);
+         if (error.code === 11000) {
+        return next(new AppError(
+            "A rule already exists for this API key + endpoint + method. Update that rule instead of creating a new one.",
+            409
+        ));
+    }
+    next(error);
     }
 }
 
@@ -95,7 +101,13 @@ exports.updateRule = async(req, res,next) => {
             updatedRule: updatetask
         })
     } catch (error) {
-        next(error);
+         if (error.code === 11000) {
+        return next(new AppError(
+            "A rule already exists for this API key + endpoint + method. Update that rule instead of creating a new one.",
+            409
+        ));
+    }
+    next(error);
     }
 }
 

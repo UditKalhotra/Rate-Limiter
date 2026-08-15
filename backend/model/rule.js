@@ -41,4 +41,6 @@ const ruleSchema = new mongoose.Schema({
     timestamps:true
 });
 
+ruleSchema.index({ apikey: 1, endpoint: 1, method: 1 }, { unique: true });
+
 module.exports = mongoose.model("Rule",ruleSchema);

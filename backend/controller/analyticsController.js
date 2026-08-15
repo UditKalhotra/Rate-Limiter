@@ -1,5 +1,6 @@
 const Request = require("../model/request");
 const AppError = require("../utils/AppError");
+const ANALYTICS_TIMEZONE = process.env.ANALYTICS_TIMEZONE || "Asia/Kolkata";
 
 
 exports.getStats = async(req,res,next)=>{
@@ -96,7 +97,7 @@ exports.getAbusivekeys = async(req, res,next) => {
                     apikey:"$_id",
                     totalRequest:1,
                     blockedRequest:1,
-                    blocketPercentage:{
+                    blockedPercentage:{
                         $multiply:[
                             {
                                 $divide:[
@@ -138,7 +139,10 @@ try{
 
         _id:{
             hour:{
-                $hour:"$timestamp"
+                $hour: {
+                    date: "$timestamp",
+                    timezone: ANALYTICS_TIMEZONE
+                }
             }
         },
 
@@ -312,7 +316,10 @@ const traffic = await Request.aggregate([
     $group:{
         _id:{
             hour:{
-                $hour:"$timestamp"
+                $hour:{
+                    date: "$timestamp",
+                    timezone: ANALYTICS_TIMEZONE
+                }
             }
         },
 
