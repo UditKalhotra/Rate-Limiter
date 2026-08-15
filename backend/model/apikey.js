@@ -6,7 +6,16 @@ const apiKeySchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    key: {
+    // SHA-256 digest of the raw key — used for fast O(1) auth lookups.
+    keyHash: {
+        type: String,
+        required: true,
+        unique: true,
+        index: true
+    },
+    // AES-256-GCM encrypted raw key — decrypted on demand so the owner
+    // can view the original key again from the dashboard.
+    keyEncrypted: {
         type: String,
         required: true
     },

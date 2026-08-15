@@ -1,7 +1,7 @@
 const crypto = require("crypto");
 const API = require('../model/apikey');
-const bcrypt = require("bcrypt");
 const AppError = require("../utils/AppError");
+const { hashKey, encryptKey, decryptKey } = require("../utils/apiKeyCrypto");
 
 exports.createAPIkey = async(req, res,next) => {
     try {
@@ -13,24 +13,44 @@ exports.createAPIkey = async(req, res,next) => {
 
         const generateKey = crypto.randomBytes(24).toString("hex");
 
-        const hashedKey = await bcrypt.hash(generateKey, 10);
-
         const apiKey = await API.create({
             name,
-            key: hashedKey,
+            keyHash: hashKey(generateKey),
+            keyEncrypted: encryptKey(generateKey),
             owner:req.user.id
         });
-        console.log(apiKey);
-        console.log("Saved ID:", apiKey._id);
-console.log("Collection:", API.collection.name);
 
         res.status(201).json({
-            message: "API Key Created u",
-            apiKey: generateKey
+            message: "API Key Created",
+            apiKey: generateKey,
+            id: apiKey._id
         })
 
     } catch (error) {
         next(error);        
+    }
+}
+
+// GET /api-key/register/:id/reveal — decrypt and return the original key
+// so the owner can view it again from the dashboard, behind an explicit
+// button click (not returned as part of the normal list response).
+exports.revealAPIkey = async(req, res,next) => {
+    try {
+        const apikey = await API.findOne({
+            _id: req.params.id,
+            owner: req.user.id
+        });
+
+        if(!apikey){
+            return next(new AppError("API key not found",404));
+        }
+
+        res.status(200).json({
+            apiKey: decryptKey(apikey.keyEncrypted)
+        });
+
+    } catch (error) {
+        next(error);
     }
 }
 

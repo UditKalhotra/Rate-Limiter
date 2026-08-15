@@ -10,10 +10,13 @@ router.route('/register')
 .get(protect,apiController.getallAPI);
 
 router.route('/register/:id')
-.delete(apiController.deleteAPI);
+.delete(protect, apiController.deleteAPI);
+
+router.route('/register/:id/reveal')
+.get(protect, apiController.revealAPIkey);
 
 router.route('/:id/revoke')
-.patch(apiController.revokeAPI);
+.patch(protect, apiController.revokeAPI);
 
 
 module.exports = router;
